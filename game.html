@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameZone - 10 Permainan Seru 1-4 Pemain</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .player-selector {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .player-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 15px 25px;
+            margin: 0 10px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .player-btn:hover, .player-btn.active {
+            background: white;
+            color: #667eea;
+            transform: scale(1.1);
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .game-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .game-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+
+        .game-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        .game-players {
+            font-size: 1.1em;
+            opacity: 0.8;
+        }
+
+        .game-screen {
+            display: none;
+            min-height: 70vh;
+            padding: 40px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            margin-top: 20px;
+        }
+
+        .game-screen.active {
+            display: block;
+        }
+
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .back-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .player-score {
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+            margin: 10px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .score-btn {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .score-btn:hover {
+            background: #45a049;
+        }
+
+        .reset-btn {
+            background: #f44336;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .dice {
+            font-size: 4em;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .card {
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(145deg, #ff6b6b, #feca57);
+            margin: 10px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 768px) {
+            .games-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 GameZone 🎮</h1>
+        
+        <div class="player-selector">
+            <h2>Pilih Jumlah Pemain:</h2>
+            <button class="player-btn active" data-players="1">1 Pemain</button>
+            <button class="player-btn" data-players="2">2 Pemain</button>
+            <button class="player-btn" data-players="3">3 Pemain</button>
+            <button class="player-btn" data-players="4">4 Pemain</button>
+        </div>
+
+        <div class="games-grid" id="gamesGrid">
+            <!-- Games akan di-generate oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- Game Screens -->
+    <div id="gameScreens"></div>
+
+    <script>
+        const games = [
+            { id: 'tictactoe', name: 'Tic Tac Toe', icon: '❌⭕', players: [2,3,4] },
+            { id: 'score race', name: 'Score Race', icon: '🏁', players: [1,2,3,4] },
+            { id: 'dice battle', name: 'Dice Battle', icon: '🎲', players: [1,2,3,4] },
+            { id: 'memory', name: 'Memory Card', icon: '🃏', players: [1,2,3,4] },
+            { id: 'rock paper', name: 'Batu Gunting Kertas', icon: '✂️🪨📄', players: [2,3,4] },
+            { id: 'number guess', name: 'Tebak Angka', icon: '🎯', players: [1,2,3,4] },
+            { id: 'reaction', name: 'Reaction Test', icon: '⚡', players: [1,2,3,4] },
+            { id: 'sequence', name: 'Simon Says', icon: '🎨', players: [1,2,3,4] },
+            { id: 'math race', name: 'Math Battle', icon: '➕✖️', players: [1,2,3,4] },
+            { id: 'word guess', name: 'Tebak Kata', icon: '🔤', players: [1,2,3,4] }
+        ];
+
+        let currentPlayers = 1;
+        let gameScores = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderGames();
+            setupPlayerSelector();
+        });
+
+        function renderGames() {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = '';
+            
+            games.forEach(game => {
+                if (game.players.includes(currentPlayers) || game.players.includes(Number(currentPlayers))) {
+                    const gameCard = document.createElement('div');
+                    gameCard.className = 'game-card';
+                    gameCard.innerHTML = `
+                        <div class="game-icon">${game.icon}</div>
+                        <div class="game-title">${game.name}</div>
+                        <div class="game-players">${game.players.join(', ')} Pemain</div>
+                    `;
+                    gameCard.onclick = () => startGame(game.id);
+                    grid.appendChild(gameCard);
+                }
+            });
+        }
+
+        function setupPlayerSelector() {
+            document.querySelectorAll('.player-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.player-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPlayers = parseInt(btn.dataset.players);
+                    renderGames();
+                };
+            });
+        }
+
+        function startGame(gameId) {
+            gameScores = {};
+            for (let i = 1; i <= currentPlayers; i++) {
+                gameScores[i] = 0;
+            }
+            
+            const screens = document.getElementById('gameScreens');
+            screens.innerHTML = `
+                <div class="game-screen active" id="game-${gameId}">
+                    <button class="back-btn" onclick="backToMenu()">← Kembali</button>
+                    <h2 id="game-title">${games.find(g => g.id === gameId).name}</h2>
+                    <div id="game-content"></div>
+                </div>
+            `;
+            
+            // Load specific game
+            switch(gameId) {
+                case 'tictactoe': initTicTacToe(); break;
+                case 'score race': initScoreRace(); break;
+                case 'dice battle': initDiceBattle(); break;
+                case 'memory': initMemory(); break;
+                case 'rock paper': initRockPaper(); break;
+                case 'number guess': initNumberGuess(); break;
+                case 'reaction': initReaction(); break;
+                case 'sequence': initSequence(); break;
+                case 'math race': initMathRace(); break;
+                case 'word guess': initWordGuess(); break;
+            }
+        }
+
+        function backToMenu() {
+            document.getElementById('gameScreens').innerHTML = '';
+            renderGames();
+        }
+
+        // 1. Tic Tac Toe
+        function initTicTacToe() {
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <div style="font-size: 4em; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; margin: 0 auto;">
+                    ${Array(9).fill('<div class="cell" style="width:100px;height:100px;background:rgba(255,255,255,0.2);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:3em;cursor:pointer;"></div>').join('')}
+                </div>
+                <p id="turn-info" style="text-align:center;margin-top:20px;font-size:1.2em;"></p>
+            `;
+            
+            let board = Array(9).fill(null);
+            let currentPlayer = 1;
+            let gameWon = false;
+            
+            document.getElementById('game-title').textContent = 'Tic Tac Toe - Pemain ' + currentPlayer;
+            
+            document.querySelectorAll('.cell').forEach((cell, index) => {
+                cell.onclick = () => {
+                    if (!board[index] && !gameWon) {
+                        board[index] = currentPlayer;
+                        cell.textContent = currentPlayer === 1 ? '❌' : '⭕';
+                        
+                        if (checkWin(board, currentPlayer)) {
+                            alert(`Pemain ${currentPlayer} Menang!`);
+                            gameScores[currentPlayer]++;
+                            updateScoreboard();
+                            gameWon = true;
+                        } else if (!board.includes(null)) {
+                            alert('Seri!');
+                        } else {
+                            currentPlayer = currentPlayer === 1 ? 2 : 1;
+                            document.getElementById('game-title').textContent = 'Tic Tac Toe - Pemain ' + currentPlayer;
+                        }
+                    }
+                };
+            });
+        }
+
+        function checkWin(board, player) {
+            const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return wins.some(combo => combo.every(i => board[i] === player));
+        }
+
+        // 2. Score Race
+        function initScoreRace() {
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <div class="scoreboard" id="scoreboard"></div>
+                <button class="score-btn" onclick="addScore(1)">+1 Poin</button>
+                <button class="score-btn" onclick="addScore(5)">+5 Poin</button>
+                <button class="score-btn" onclick="addScore(10)">+10 Poin</button>
+            `;
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            const scoreboard = document.getElementById('scoreboard') || document.querySelector('.scoreboard');
+            if (scoreboard) {
+                scoreboard.innerHTML = '';
+                for (let i = 1; i <= currentPlayers; i++) {
+                    const playerDiv = document.createElement('div');
+                    playerDiv.className = 'player-score';
+                    playerDiv.innerHTML = `
+                        <div style="font-size:1.5em;font-weight:bold;">P${i}</div>
+                        <div style="font-size:2em;">${gameScores[i]}</div>
+                    `;
+                    scoreboard.appendChild(playerDiv);
+                }
+            }
+        }
+
+        function addScore(player) {
+            gameScores[player]++;
+            updateScoreboard();
+        }
+
+        // 3. Dice Battle
+        function initDiceBattle() {
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <div class="scoreboard" id="dice-scoreboard"></div>
+                <div style="text-align:center;margin:30px 0;">
+                    <div class="dice" id="dice" onclick="rollDice()">🎲 Roll Dice</div>
+                    <p id="dice-result"></p>
+                </div>
+            `;
+            updateScoreboard();
+        }
+
+        function rollDice() {
+            const dice = Math.floor(Math.random() * 6) + 1;
+            document.getElementById('dice').textContent = ['⚀','⚁','⚂','⚃','⚄','⚅'][dice-1];
+            document.getElementById('dice-result').textContent = `Hasil: ${dice}`;
+            
+            const player = Math.floor(Math.random() * currentPlayers) + 1;
+            gameScores[player] += dice;
+            updateScoreboard();
+        }
+
+        // 4. Memory Game
+        function initMemory() {
+            const content = document.getElementById('game-content');
+            const cards = Array(12).fill().map((_, i) => i % 6).sort(() => Math.random() - 0.5);
+            let flipped = [];
+            
+            content.innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:400px;margin:0 auto;">
+                    ${cards.map((card, i) => `<div class="card" data-card="${card}" data-index="${i}">?</div>`).join('')}
+                </div>
+                <p style="text-align:center;margin-top:20px;">Cocokkan semua kartu!</p>
+            `;
+            
+            document.querySelectorAll('.card').forEach(card => {
+                card.onclick = () => {
+                    if (flipped.length < 2 && !card.classList.contains('matched')) {
+                        card.textContent = ['A','B','C','D','E','F'][parseInt(card.dataset.card)];
+                        flipped.push(card);
+                        
+                        if (flipped.length === 2) {
+                            setTimeout(() => {
+                                if (flipped[0].dataset.card === flipped[1].dataset.card) {
+                                    flipped.forEach(c => c.classList.add('matched'));
+                                    gameScores[1]++;
+                                    updateScoreboard();
+                                } else {
+                                    flipped.forEach(c => c.textContent = '?');
+                                }
+                                flipped = [];
+                            }, 1000);
+                        }
+                    }
+                };
+            });
+        }
+
+        // 5. Rock Paper Scissors
+        function initRockPaper() {
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <div style="text-align:center;">
+                    <div style="font-size:3em;margin:20px 0;">✂️ 🪨 📄</div>
+                    <p>Pilih: Batu 🪨 | Gunting ✂️ | Kertas 📄</p>
+                    <div style="display:flex;justify-content:center;gap:20px;flex-wrap:wrap;">
+                        <button class="score-btn" onclick="playRPS('rock')">🪨 Batu</button>
+                        <button class="score-btn" onclick="playRPS('paper')">📄 Kertas</button>
+                        <button class="score-btn" onclick="playRPS('scissors')">✂️ Gunting</button>
+                    </div>
+                    <p id="rps-result" style="margin-top:20px;font-size:1.2em;"></p>
+                </div>
+            `;
+        }
+
+        function playRPS(choice) {
+            const choices = ['rock', 'paper', 'scissors'];
+            const computer = choices[Math.floor(Math.random() * 3)];
+            let result = '';
+            
+            if (choice === computer) {
+                result = 'Seri!';
+            } else if (
+                (choice === 'rock' && computer === 'scissors') ||
+                (choice === 'paper' && computer === 'rock') ||
+                (choice === 'scissors' && computer === 'paper')
+            ) {
+                result = 'Kamu Menang!';
+                gameScores[1]++;
+                updateScoreboard();
+            } else {
+                result = 'Kamu Kalah!';
+            }
+            
+            document.getElementById('rps-result').textContent = 
+                `Kamu: ${['🪨','📄','✂️'][choices.indexOf(choice)]} | Komputer: ${['🪨','📄','✂️'][choices.indexOf(computer)]}\n${result}`;
+        }
+
+        // 6. Number Guess
+        function initNumberGuess() {
+            const content = document.getElementById('game-content');
+            const target = Math.floor(Math.random() * 100) + 1;
+            let attempts = 0;
+            
+            content.innerHTML = `
+                <p style="text-align:center;font-size:1.3em;">Tebak angka 1-100!</p>
+                <input type="number" id="guess-input" min="1" max="100" style="padding:15px;font-size:1.2em;border-radius:10px;border:none;width:200px;display:block;margin:20px auto;">
+                <button class="score-btn" onclick="checkGuess(${target})" style="display:block;margin:0 auto;font-size:1.2em;">Tebak!</button>
+                <p id="guess-feedback"></p>
+            `;
+        }
+
+        function checkGuess(target) {
+            const guess = parseInt(document.getElementById('guess-input').value);
+            const feedback = document.getElementById('guess-feedback');
+            attempts++;
+            
+            if (guess === target) {
+                feedback.textContent = `🎉 Benar! ${attempts} percobaan.`;
+                gameScores[1]++;
+                updateScoreboard();
+            } else if (guess < target) {
+                feedback.textContent = '📈 Terlalu kecil! Coba lagi.';
+            } else {
+                feedback.textContent = '📉 Terlalu besar! Coba lagi.';
+            }
+        }
+
+        // 7. Reaction Test
+        function initReaction() {
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <p>Klik secepat mungkin saat lingkaran berubah hijau!</p>
+                <div id="reaction-circle" style="width:200px;height:200px;border-radius:50%;background:gray;margin:30px auto;cursor:pointer;transition:all 0.3s;"></div>
+                <p id="reaction-time">Tunggu...</p>
+                <p id="best-time">Rekor: --</p>
+            `;
+            
+            let startTime, bestTime = Infinity;
+            const circle = document.getElementById('reaction-circle');
+            
+            circle.onclick = () => {
+                if (circle.style.background === 'green') {
+                    const time = Date.now() - startTime;
+                    document.getElementById('reaction-time').textContent = `Waktu: ${time}ms`;
+                    if (time < bestTime) {
+                        bestTime = time;
+                        document.getElementById('best-time').textContent = `Rekor: ${time}ms`;
+                    }
+                    gameScores[1]++;
+                    updateScoreboard();
+                }
+            };
+            
+            setTimeout(() => {
+                startTime = Date.now();
+                circle.style.background = 'green';
+            }, Math.random() * 3000 + 1000);
+        }
+
+        // 8. Sequence Game (Simon Says)
+        function initSequence() {
+            const content = document.getElementById('game-content');
+            let sequence = [];
+            let playerSeq = [];
+            
+            content.innerHTML = `
+                <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;max-width:300px;margin:0 auto 30px;">
+                    <div class="card" style="background:red" onclick="playerClick(0)"></div>
+                    <div class="card" style="background:blue" onclick="playerClick(1)"></div>
+                    <div class="card" style="background:yellow" onclick="playerClick(2)"></div>
+                    <div class="card" style="background:green" onclick="playerClick(3)"></div>
+                </div>
+                <p id="sequence-status">Klik START untuk mulai</p>
+                <button class="score-btn" onclick="nextSequence()" id="start-btn">START</button>
+            `;
+        }
+
+        // 9. Math Race
+        function initMathRace() {
+            const content = document.getElementById('game-content');
+            const num1 = Math.floor(Math.random() * 20) + 1;
+            const num2 = Math.floor(Math.random() * 20) + 1;
+            const answer = num1 + num2;
+            
+            content.innerHTML = `
+                <p style="font-size:2em;text-align:center;margin:30px 0;">${num1} + ${num2} = ?</p>
+                <input type="number" id="math-input" style="padding:20px;font-size:2em;border-radius:15px;border:none;width:200px;display:block;margin:0 auto 20px;text-align:center;">
+                <button class="score-btn" onclick="checkMath(${answer})" style="font-size:1.2em;padding:15px 30px;">Jawab!</button>
+                <button class="score-btn" onclick="newMath()" style="background:#2196F3;">Soal Baru</button>
+            `;
+        }
+
+        function checkMath(answer) {
+            const guess = parseInt(document.getElementById('math-input').value);
+            if (guess === answer) {
+                alert('Benar!');
+                gameScores[1]++;
+                updateScoreboard();
+                newMath();
+            } else {
+                alert('Salah! Coba lagi.');
+            }
+        }
+
+        function newMath() {
+            const num1 = Math.floor(Math.random() * 20) + 1;
+            const num2 = Math.floor(Math.random() * 20) + 1;
+            const answer = num1 + num2;
+            document.querySelector('p[style*="font-size:2em"]').textContent = `${num1} + ${num2} = ?`;
+        }
+
+        // 10. Word Guess
+        function initWordGuess() {
+            const words = ['HTML', 'CSS', 'JAVASCRIPT', 'GAME', 'PLAYER', 'WINNER', 'SCORE'];
+            const word = words[Math.floor(Math.random() * words.length)];
+            const display = '_'.repeat(word.length).split('').join(' ');
+            
+            const content = document.getElementById('game-content');
+            content.innerHTML = `
+                <p style="font-size:2em;text-align:center;margin:30px 0;">${display}</p>
+                <p style="text-align:center;">Tebak huruf atau kata!</p>
+                <input type="text" id="word-input" maxlength="${word.length}" style="padding:15px;font-size:1.5em;border-radius:10px;border:none;width:250px;display:block;margin:20px auto;text-align:center;text-transform:uppercase;">
+                <button class="score-btn" onclick="checkWord('${word}')" style="font-size:1.2em;">Tebak!</button>
+            `;
+        }
+
+        function checkWord(target) {
+            const guess = document.getElementById('word-input').value.toUpperCase();
+            if (guess === target) {
+                alert('🎉 Benar!');
+                gameScores[1]++;
+                updateScoreboard();
+            } else {
+                alert('❌ Salah! Coba lagi.');
+            }
+        }
+
+        // Global reset button
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('reset-btn')) {
+                gameScores = {};
+                for (let i = 1; i <= currentPlayers; i++) {
+                    gameScores[i] = 0;
+                }
+                updateScoreboard();
+            }
+        });
+    </script>
+</body>
+</html>
